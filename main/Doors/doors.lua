@@ -334,21 +334,40 @@ local function KeyESPLoop()
         local roomInfo = getrooms()
         
         -- Check rooms for keys
-        for i = roomInfo.current, roomInfo.next + 1 do
+        for i = roomInfo.current - 1, roomInfo.next + 2 do
             local room = rooms:FindFirstChild(tostring(i))
             if room then
-                local parts = room:FindFirstChild("Parts")
-                if parts then
-                    for _, v in pairs(parts:GetDescendants()) do
-                        if v:IsA("Model") and string.find(string.lower(v.Name), "key") then
-                            local keyPart = v:FindFirstChild("Handle") or v:FindFirstChildWhichIsA("BasePart")
-                            
-                            if keyPart and not espInstances.keys[v] then
-                                espInstances.keys[v] = ArcaneEsp.new(keyPart)
-                                    :AddEsp(CONFIG.keyColor)
-                                    :AddTitle(Color3.new(1, 1, 1), "🔑 KEY")
-                                    :AddDistance(Color3.new(1, 1, 1))
-                                    :AddGlow(CONFIG.keyColor, 8)
+                -- Check in Assets folder
+                local assets = room:FindFirstChild("Assets")
+                if assets then
+                    -- Look for KeyObtain
+                    local keyObtain = assets:FindFirstChild("KeyObtain")
+                    if keyObtain then
+                        local hitbox = keyObtain:FindFirstChild("Hitbox")
+                        
+                        if hitbox and not espInstances.keys[keyObtain] then
+                            espInstances.keys[keyObtain] = ArcaneEsp.new(hitbox)
+                                :AddEsp(CONFIG.keyColor)
+                                :AddTitle(Color3.new(1, 1, 1), "🔑 KEY")
+                                :AddDistance(Color3.new(1, 1, 1))
+                                :AddGlow(CONFIG.keyColor, 8)
+                        end
+                    end
+                    
+                    -- Also check in Parts folder (backup method)
+                    local parts = room:FindFirstChild("Parts")
+                    if parts then
+                        for _, v in pairs(parts:GetDescendants()) do
+                            if v:IsA("Model") and string.find(string.lower(v.Name), "key") then
+                                local keyPart = v:FindFirstChild("Handle") or v:FindFirstChildWhichIsA("BasePart")
+                                
+                                if keyPart and not espInstances.keys[v] then
+                                    espInstances.keys[v] = ArcaneEsp.new(keyPart)
+                                        :AddEsp(CONFIG.keyColor)
+                                        :AddTitle(Color3.new(1, 1, 1), "🔑 KEY")
+                                        :AddDistance(Color3.new(1, 1, 1))
+                                        :AddGlow(CONFIG.keyColor, 8)
+                                end
                             end
                         end
                     end
