@@ -1,4 +1,4 @@
--- Matcha Doors Script - Complete Version
+-- Matcha Doors Script 
 -- Libraries
 loadstring(game:HttpGet("https://arcanecheats.xyz/api/matcha/uilib"))()
 repeat wait() until Arcane
@@ -19,21 +19,19 @@ local CONFIG = {
     doorESP = true,
     keyESP = true,
     entityESP = true,
-    bookESP = true,
+    figureESP = true,
     speedBoost = 0,
     espColor = Color3.fromRGB(127, 107, 188),
     doorColor = Color3.fromRGB(50, 255, 128),
     keyColor = Color3.fromRGB(255, 215, 0),
     entityColor = Color3.fromRGB(255, 0, 0),
-    bookColor = Color3.fromRGB(255, 165, 0),
     figureColor = Color3.fromRGB(139, 0, 0)
 }
 
 local espInstances = {
     doors = {},
     keys = {},
-    entities = {},
-    books = {}
+    entities = {}
 }
 
 -- Create UI
@@ -52,7 +50,7 @@ local EntitySection = Window:CreateSection("Entity Detection", "Main")
 local MovementSection = Window:CreateSection("Movement", "Main")
 local DoorSection = Window:CreateSection("Door ESP", "Visuals")
 local KeySection = Window:CreateSection("Key ESP", "Visuals")
-local LibrarySection = Window:CreateSection("Library ESP", "Visuals")
+local FigureSection = Window:CreateSection("Figure ESP", "Visuals")
 local ColorSection = Window:CreateSection("Colors", "Visuals")
 
 -- Entity Detection Toggles
@@ -115,18 +113,20 @@ KeySection:AddToggle("Enable Key ESP", CONFIG.keyESP, function(value)
     Arcane:Notify("ESP", "Key ESP " .. (value and "enabled" or "disabled"), 3)
 end)
 
--- Library Section
-LibrarySection:AddToggle("Enable Book ESP", CONFIG.bookESP, function(value)
-    CONFIG.bookESP = value
+-- Figure ESP Section
+FigureSection:AddToggle("Enable Figure ESP", CONFIG.figureESP, function(value)
+    CONFIG.figureESP = value
     if not value then
-        for _, esp in pairs(espInstances.books) do
-            if esp and esp.Destroy then
-                esp:Destroy()
-            end
+        if espInstances.entities["Figure50"] then
+            espInstances.entities["Figure50"]:Destroy()
+            espInstances.entities["Figure50"] = nil
         end
-        espInstances.books = {}
+        if espInstances.entities["Figure100"] then
+            espInstances.entities["Figure100"]:Destroy()
+            espInstances.entities["Figure100"] = nil
+        end
     end
-    Arcane:Notify("ESP", "Book ESP " .. (value and "enabled" or "disabled"), 3)
+    Arcane:Notify("ESP", "Figure ESP " .. (value and "enabled" or "disabled"), 3)
 end)
 
 -- Color Pickers
@@ -154,14 +154,16 @@ ColorSection:AddColorPicker("Entity Color", CONFIG.entityColor, function(color)
     CONFIG.entityColor = color
 end)
 
-ColorSection:AddColorPicker("Book Color", CONFIG.bookColor, function(color)
-    CONFIG.bookColor = color
-    for _, esp in pairs(espInstances.books) do
-        if esp and esp.Destroy then
-            esp:Destroy()
-        end
+ColorSection:AddColorPicker("Figure Color", CONFIG.figureColor, function(color)
+    CONFIG.figureColor = color
+    if espInstances.entities["Figure50"] then
+        espInstances.entities["Figure50"]:Destroy()
+        espInstances.entities["Figure50"] = nil
     end
-    espInstances.books = {}
+    if espInstances.entities["Figure100"] then
+        espInstances.entities["Figure100"]:Destroy()
+        espInstances.entities["Figure100"] = nil
+    end
 end)
 
 -- Utility Functions
@@ -194,20 +196,20 @@ end
 
 local function notifyEntity(entityName)
     if CONFIG.entityNotify then
-        Arcane:Notify("ENTITY ALERT", entityName .. " SPAWNED!", 5)
+        Arcane:Notify("ENTITY ALERT", entityName .. " SPAWNED!", 2)
         
         -- Flash Warning
         local vSize = workspace.CurrentCamera.ViewportSize
         local warning = Drawing.new("Text")
-        warning.Text = "⚠️ " .. entityName .. " SPAWNED! ⚠️"
-        warning.Size = 200
+        warning.Text = "⚠️ " .. entityName .. " SPAWNED!"
+        warning.Size = 80
         warning.Color = Color3.fromRGB(255, 0, 0)
         warning.Outline = true
         warning.Position = Vector2.new(vSize.X / 2 - 250, vSize.Y / 2)
         warning.Visible = true
         
         task.spawn(function()
-            task.wait(3)
+            task.wait(2)
             warning:Remove()
         end)
     end
@@ -301,7 +303,7 @@ local function DoorESPLoop()
                     -- Create ESP if not exists
                     if not espInstances.doors[roomNum] then
                         local requiresKey = door.Parent:GetAttribute("RequiresKey") == true
-                        local doorLabel = "Door " .. roomNum .. (requiresKey and "Locked" or "")
+                        local doorLabel = "Door " .. roomNum .. (requiresKey and " 🔑" or "")
                         
                         espInstances.doors[roomNum] = ArcaneEsp.new(collision)
                             :AddEsp(CONFIG.doorColor)
@@ -333,14 +335,13 @@ local function KeyESPLoop()
         
         local roomInfo = getrooms()
         
-        -- Check rooms for keys
+        -- Check rooms for keys (wider range)
         for i = roomInfo.current - 1, roomInfo.next + 2 do
             local room = rooms:FindFirstChild(tostring(i))
             if room then
-                -- Check in Assets folder
+                -- Check in Assets folder for KeyObtain
                 local assets = room:FindFirstChild("Assets")
                 if assets then
-                    -- Look for KeyObtain
                     local keyObtain = assets:FindFirstChild("KeyObtain")
                     if keyObtain then
                         local hitbox = keyObtain:FindFirstChild("Hitbox")
@@ -354,7 +355,7 @@ local function KeyESPLoop()
                         end
                     end
                     
-                    -- Also check in Parts folder (backup method)
+                    -- Also check Parts folder (backup)
                     local parts = room:FindFirstChild("Parts")
                     if parts then
                         for _, v in pairs(parts:GetDescendants()) do
@@ -385,12 +386,12 @@ local function KeyESPLoop()
     end
 end
 
--- Figure ESP Loop
+-- Figure ESP Loop (Simplified)
 local function FigureESPLoop()
     while true do
         task.wait(0.5)
         
-        if not CONFIG.entityESP or not rooms then
+        if not CONFIG.figureESP or not rooms then
             continue
         end
         
@@ -411,9 +412,6 @@ local function FigureESPLoop()
                         if figurePart then
                             espInstances.entities["Figure50"] = ArcaneEsp.new(figurePart)
                                 :AddEsp(CONFIG.figureColor)
-                                :AddTitle(Color3.new(1, 1, 1), "⚠️ FIGURE")
-                                :AddDistance(Color3.new(1, 0, 0))
-                                :AddGlow(CONFIG.figureColor, 15)
                         end
                     end
                 end
@@ -439,9 +437,6 @@ local function FigureESPLoop()
                         if figurePart then
                             espInstances.entities["Figure100"] = ArcaneEsp.new(figurePart)
                                 :AddEsp(CONFIG.figureColor)
-                                :AddTitle(Color3.new(1, 1, 1), "⚠️ FIGURE")
-                                :AddDistance(Color3.new(1, 0, 0))
-                                :AddGlow(CONFIG.figureColor, 15)
                         end
                     end
                 end
@@ -455,61 +450,6 @@ local function FigureESPLoop()
     end
 end
 
--- Books ESP Loop
-local function BooksESPLoop()
-    while true do
-        task.wait(1)
-        
-        if not CONFIG.bookESP or not rooms then
-            continue
-        end
-        
-        local roomInfo = getrooms()
-        local currentRoom = roomInfo.current
-        
-        -- Check if in Library (Room 50)
-        if currentRoom >= 49 and currentRoom <= 51 then
-            local room50 = rooms:FindFirstChild("50")
-            if room50 then
-                local assets = room50:FindFirstChild("Assets")
-                if assets then
-                    for _, v in pairs(assets:GetDescendants()) do
-                        if v:IsA("Model") and (string.find(string.lower(v.Name), "book") or v.Name == "LibraryHintPaper") then
-                            local bookPart = v:FindFirstChild("Base") or v:FindFirstChild("Handle") or v:FindFirstChildWhichIsA("BasePart")
-                            
-                            if bookPart and not espInstances.books[v] then
-                                if bookPart.Transparency < 1 then
-                                    local label = v.Name == "LibraryHintPaper" and "📄 SOLUTION" or "📖 BOOK"
-                                    
-                                    espInstances.books[v] = ArcaneEsp.new(bookPart)
-                                        :AddEsp(CONFIG.bookColor)
-                                        :AddTitle(Color3.new(1, 1, 1), label)
-                                        :AddDistance(Color3.new(1, 1, 1))
-                                        :AddGlow(CONFIG.bookColor, 6)
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        else
-            -- Clean up books when leaving room 50
-            for book, esp in pairs(espInstances.books) do
-                esp:Destroy()
-                espInstances.books[book] = nil
-            end
-        end
-        
-        -- Cleanup collected books
-        for book, esp in pairs(espInstances.books) do
-            if not book.Parent then
-                esp:Destroy()
-                espInstances.books[book] = nil
-            end
-        end
-    end
-end
-
 -- Finalize Window
 Window:Finalize()
 
@@ -518,10 +458,9 @@ spawn(EntityDetectionLoop)
 spawn(DoorESPLoop)
 spawn(KeyESPLoop)
 spawn(FigureESPLoop)
-spawn(BooksESPLoop)
 
 -- Initial notifications
 Arcane:Log("Doors ESP initialized successfully!", 3)
 Arcane:Notify("Welcome", "Doors ESP Loaded!", 5)
 
-print("[Matcha Doors] Script loaded with Figure & Books ESP")
+print("[Matcha Doors] Script loaded - Optimized")
