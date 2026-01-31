@@ -1,4 +1,4 @@
--- Matcha Doors Script 
+-- Matcha Doors Script - Final Version? 
 -- Libraries
 loadstring(game:HttpGet("https://arcanecheats.xyz/api/matcha/uilib"))()
 repeat wait() until Arcane
@@ -20,7 +20,6 @@ local CONFIG = {
     keyESP = true,
     entityESP = true,
     figureESP = true,
-    speedBoost = 0,
     espColor = Color3.fromRGB(127, 107, 188),
     doorColor = Color3.fromRGB(50, 255, 128),
     keyColor = Color3.fromRGB(255, 215, 0),
@@ -47,7 +46,6 @@ local VisualsTab = Window:CreateTab("Visuals")
 
 -- Sections
 local EntitySection = Window:CreateSection("Entity Detection", "Main")
-local MovementSection = Window:CreateSection("Movement", "Main")
 local DoorSection = Window:CreateSection("Door ESP", "Visuals")
 local KeySection = Window:CreateSection("Key ESP", "Visuals")
 local FigureSection = Window:CreateSection("Figure ESP", "Visuals")
@@ -71,19 +69,6 @@ EntitySection:AddToggle("Entity ESP", CONFIG.entityESP, function(value)
     end
     Arcane:Notify("ESP", "Entity ESP " .. (value and "enabled" or "disabled"), 3)
 end)
-
--- Movement Section
-MovementSection:AddSlider("Speed Boost", {
-    Min = 0, 
-    Max = 10, 
-    Default = 0, 
-    Callback = function(value)
-        CONFIG.speedBoost = value
-        if player.Character then
-            player.Character:SetAttribute("SpeedBoost", value)
-        end
-    end
-})
 
 -- Door ESP Section
 DoorSection:AddToggle("Enable Door ESP", CONFIG.doorESP, function(value)
@@ -196,20 +181,20 @@ end
 
 local function notifyEntity(entityName)
     if CONFIG.entityNotify then
-        Arcane:Notify("ENTITY ALERT", entityName .. " SPAWNED!", 2)
+        Arcane:Notify("ENTITY ALERT", entityName .. " SPAWNED!", 5)
         
         -- Flash Warning
         local vSize = workspace.CurrentCamera.ViewportSize
         local warning = Drawing.new("Text")
-        warning.Text = "⚠️ " .. entityName .. " SPAWNED!"
-        warning.Size = 80
+        warning.Text = "⚠️ " .. entityName .. " SPAWNED! ⚠️"
+        warning.Size = 200
         warning.Color = Color3.fromRGB(255, 0, 0)
         warning.Outline = true
         warning.Position = Vector2.new(vSize.X / 2 - 250, vSize.Y / 2)
         warning.Visible = true
         
         task.spawn(function()
-            task.wait(2)
+            task.wait(3)
             warning:Remove()
         end)
     end
@@ -386,7 +371,7 @@ local function KeyESPLoop()
     end
 end
 
--- Figure ESP Loop (Simplified)
+-- Figure ESP Loop
 local function FigureESPLoop()
     while true do
         task.wait(0.5)
@@ -463,4 +448,4 @@ spawn(FigureESPLoop)
 Arcane:Log("Doors ESP initialized successfully!", 3)
 Arcane:Notify("Welcome", "Doors ESP Loaded!", 5)
 
-print("[Matcha Doors] Script loaded - Optimized")
+print("[Matcha Doors] Script loaded - Final Version")
