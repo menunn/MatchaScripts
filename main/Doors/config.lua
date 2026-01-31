@@ -15,6 +15,8 @@ local Config = {
     
     -- Colors
     doorColor = Color3.fromRGB(50, 255, 128),
+    bookColor = Color3.fromRGB(255, 165, 0)
+    figureColor = Color3.fromRGB(139, 0, 0)
     keyColor = Color3.fromRGB(255, 215, 0),
     entityColor = Color3.fromRGB(255, 0, 0),
     

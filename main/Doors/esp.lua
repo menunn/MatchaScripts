@@ -154,7 +154,150 @@ function ESP.Init(Config)
         end
     end)
     
-    Arcane:Log("ESP loops started", 2)
+
+    -- Figure ESP Loop (NUEVO)
+    spawn(function()
+        while true do
+            task.wait(0.5)
+            
+            if not Config.entityESP or not Config.rooms then
+                continue
+            end
+            
+            local roomInfo = Config.getRooms()
+            local currentRoom = roomInfo.current
+            
+            -- Check if we're in room 50 or 100
+            if currentRoom >= 49 and currentRoom <= 51 then
+                local room50 = Config.rooms:FindFirstChild("50")
+                if room50 then
+                    local figureSetup = room50:FindFirstChild("FigureSetup")
+                    if figureSetup then
+                        local figureRig = figureSetup:FindFirstChild("FigureRig")
+                        if figureRig and not Config.espInstances.entities["Figure50"] then
+                            Config.notifyEntity("FIGURE")
+                            
+                            local figurePart = figureRig:FindFirstChild("HumanoidRootPart") or figureRig:FindFirstChildWhichIsA("BasePart")
+                            if figurePart then
+                                Config.espInstances.entities["Figure50"] = ArcaneEsp.new(figurePart)
+                                    :AddEsp(Color3.fromRGB(139, 0, 0))
+                                    :AddTitle(Color3.new(1, 1, 1), "⚠️ FIGURE")
+                                    :AddDistance(Color3.new(1, 0, 0))
+                                    :AddGlow(Color3.fromRGB(139, 0, 0), 15)
+                            end
+                        end
+                    end
+                end
+            else
+                -- Clean up Figure ESP when leaving room 50
+                if Config.espInstances.entities["Figure50"] then
+                    Config.espInstances.entities["Figure50"]:Destroy()
+                    Config.espInstances.entities["Figure50"] = nil
+                end
+            end
+            
+            -- Check for room 100 Figure
+            if currentRoom >= 99 and currentRoom <= 101 then
+                local room100 = Config.rooms:FindFirstChild("100")
+                if room100 then
+                    local figureSetup = room100:FindFirstChild("FigureSetup")
+                    if figureSetup then
+                        local figureRig = figureSetup:FindFirstChild("FigureRig")
+                        if figureRig and not Config.espInstances.entities["Figure100"] then
+                            Config.notifyEntity("FIGURE")
+                            
+                            local figurePart = figureRig:FindFirstChild("HumanoidRootPart") or figureRig:FindFirstChildWhichIsA("BasePart")
+                            if figurePart then
+                                Config.espInstances.entities["Figure100"] = ArcaneEsp.new(figurePart)
+                                    :AddEsp(Color3.fromRGB(139, 0, 0))
+                                    :AddTitle(Color3.new(1, 1, 1), "⚠️ FIGURE")
+                                    :AddDistance(Color3.new(1, 0, 0))
+                                    :AddGlow(Color3.fromRGB(139, 0, 0), 15)
+                            end
+                        end
+                    end
+                end
+            else
+                -- Clean up Figure ESP when leaving room 100
+                if Config.espInstances.entities["Figure100"] then
+                    Config.espInstances.entities["Figure100"]:Destroy()
+                    Config.espInstances.entities["Figure100"] = nil
+                end
+            end
+        end
+    end)
+    
+    -- Books ESP Loop (NUEVO)
+    spawn(function()
+        while true do
+            task.wait(1)
+            
+            if not Config.keyESP or not Config.rooms then
+                continue
+            end
+            
+            local roomInfo = Config.getRooms()
+            local currentRoom = roomInfo.current
+            
+            -- Check if we're in room 50 (Library)
+            if currentRoom >= 49 and currentRoom <= 51 then
+                local room50 = Config.rooms:FindFirstChild("50")
+                if room50 then
+                    local assets = room50:FindFirstChild("Assets")
+                    if assets then
+                        -- Find books in the library
+                        for _, v in pairs(assets:GetDescendants()) do
+                            if v:IsA("Model") and (string.find(string.lower(v.Name), "book") or v.Name == "LibraryHintPaper") then
+                                -- Find the main part of the book
+                                local bookPart = v:FindFirstChild("Base") or v:FindFirstChild("Handle") or v:FindFirstChildWhichIsA("BasePart")
+                                
+                                if bookPart and not Config.espInstances.keys[v] then
+                                    -- Check if book has Transparency to see if it's been collected
+                                    if bookPart.Transparency < 1 then
+                                        Config.espInstances.keys[v] = ArcaneEsp.new(bookPart)
+                                            :AddEsp(Color3.fromRGB(255, 165, 0))
+                                            :AddTitle(Color3.new(1, 1, 1), "📖 BOOK")
+                                            :AddDistance(Color3.new(1, 1, 1))
+                                            :AddGlow(Color3.fromRGB(255, 165, 0), 6)
+                                    end
+                                end
+                            end
+                            
+                            -- Also check for the Solution Paper on the desk
+                            if v.Name == "LibraryHintPaper" and not Config.espInstances.keys["SolutionPaper"] then
+                                local paper = v:FindFirstChildWhichIsA("BasePart")
+                                if paper then
+                                    Config.espInstances.keys["SolutionPaper"] = ArcaneEsp.new(paper)
+                                        :AddEsp(Color3.fromRGB(255, 255, 255))
+                                        :AddTitle(Color3.new(1, 1, 1), "📄 SOLUTION")
+                                        :AddDistance(Color3.new(1, 1, 1))
+                                        :AddGlow(Color3.fromRGB(255, 255, 255), 8)
+                                end
+                            end
+                        end
+                    end
+                end
+            else
+                -- Clean up books ESP when leaving room 50
+                for key, esp in pairs(Config.espInstances.keys) do
+                    if type(key) == "string" or (type(key) == "userdata" and key.Name and string.find(string.lower(key.Name), "book")) then
+                        esp:Destroy()
+                        Config.espInstances.keys[key] = nil
+                    end
+                end
+            end
+            
+            -- Cleanup collected books
+            for key, esp in pairs(Config.espInstances.keys) do
+                if type(key) == "userdata" and not key.Parent then
+                    esp:Destroy()
+                    Config.espInstances.keys[key] = nil
+                end
+            end
+        end
+    end)
+
+    Arcane:Log("ESP started", 2)
 end
 
 return ESP
