@@ -186,7 +186,7 @@ local function notifyEntity(entityName)
         -- Flash Warning
         local vSize = workspace.CurrentCamera.ViewportSize
         local warning = Drawing.new("Text")
-        warning.Text = "⚠️ " .. entityName .. " SPAWNED! ⚠️"
+        warning.Text = "⚠️ " .. entityName .. " SPAWNED!"
         warning.Size = 100
         warning.Color = Color3.fromRGB(255, 0, 0)
         warning.Outline = true
@@ -288,7 +288,7 @@ local function DoorESPLoop()
                     -- Create ESP if not exists
                     if not espInstances.doors[roomNum] then
                         local requiresKey = door.Parent:GetAttribute("RequiresKey") == true
-                        local doorLabel = "Door " .. roomNum .. (requiresKey and " 🔑" or "")
+                        local doorLabel = "Door " .. roomNum .. (requiresKey and " Locked" or "")
                         
                         espInstances.doors[roomNum] = ArcaneEsp.new(collision)
                             :AddEsp(CONFIG.doorColor)
