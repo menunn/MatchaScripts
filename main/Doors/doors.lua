@@ -187,7 +187,7 @@ local function notifyEntity(entityName)
         local vSize = workspace.CurrentCamera.ViewportSize
         local warning = Drawing.new("Text")
         warning.Text = "⚠️ " .. entityName .. " SPAWNED! ⚠️"
-        warning.Size = 200
+        warning.Size = 100
         warning.Color = Color3.fromRGB(255, 0, 0)
         warning.Outline = true
         warning.Position = Vector2.new(vSize.X / 2 - 250, vSize.Y / 2)
