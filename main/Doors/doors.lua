@@ -203,7 +203,7 @@ local function getrooms()
     
     return {
         current = highest,      
-        next = highest + 1      
+        next = highest - 1 
     }
 end
 
@@ -306,7 +306,7 @@ local function DoorESPLoop()
         local nextRoom = roomInfo.next
         
         -- ESP for current and next door
-        for _, roomNum in ipairs({currentRoom, nextRoom}) do
+        for _, roomNum in ipairs({nextRoom, nextRoom + 1}) do
             local room = rooms:FindFirstChild(tostring(roomNum))
             if room then
                 local door = room:FindFirstChild("Door")
