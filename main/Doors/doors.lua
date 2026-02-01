@@ -209,13 +209,13 @@ end
 
 local function notifyEntity(entityName)
     if CONFIG.entityNotify then
-        Arcane:Notify("ENTITY ALERT", entityName .. " SPAWNED!", 5)
+        Arcane:Notify("ENTITY ALERT", entityName .. " SPAWNED!", 2)
         
         -- Flash Warning
         local vSize = workspace.CurrentCamera.ViewportSize
         local warning = Drawing.new("Text")
-        warning.Text = "⚠️ " .. entityName .. " SPAWNED! ⚠️"
-        warning.Size = 200
+        warning.Text = entityName .. " SPAWNED!"
+        warning.Size = 10
         warning.Color = Color3.fromRGB(255, 0, 0)
         warning.Outline = true
         warning.Position = Vector2.new(vSize.X / 2 - 250, vSize.Y / 2)
@@ -316,7 +316,7 @@ local function DoorESPLoop()
                     -- Create ESP if not exists
                     if not espInstances.doors[roomNum] then
                         local requiresKey = door.Parent:GetAttribute("RequiresKey") == true
-                        local doorLabel = "Door " .. roomNum .. (requiresKey and " 🔑" or "")
+                        local doorLabel = "Door " .. roomNum .. (requiresKey and " KEY" or "")
                         
                         espInstances.doors[roomNum] = ArcaneEsp.new(collision)
                             :AddEsp(CONFIG.doorColor)
@@ -364,7 +364,7 @@ local function KeyESPLoop()
                                 if hitbox and not espInstances.keys[keyObtain] then
                                     espInstances.keys[keyObtain] = ArcaneEsp.new(hitbox)
                                         :AddEsp(CONFIG.keyColor)
-                                        :AddTitle(Color3.new(1, 1, 1), "🔑 KEY")
+                                        :AddTitle(Color3.new(1, 1, 1), "KEY")
                                         :AddDistance(Color3.new(1, 1, 1))
                                         :AddGlow(CONFIG.keyColor, 8)
                                 end
@@ -380,7 +380,7 @@ local function KeyESPLoop()
                         if hitbox and not espInstances.keys[keyObtain] then
                             espInstances.keys[keyObtain] = ArcaneEsp.new(hitbox)
                                 :AddEsp(CONFIG.keyColor)
-                                :AddTitle(Color3.new(1, 1, 1), "🔑 KEY")
+                                :AddTitle(Color3.new(1, 1, 1), "KEY")
                                 :AddDistance(Color3.new(1, 1, 1))
                                 :AddGlow(CONFIG.keyColor, 8)
                         end
@@ -396,7 +396,7 @@ local function KeyESPLoop()
                                 if keyPart and not espInstances.keys[v] then
                                     espInstances.keys[v] = ArcaneEsp.new(keyPart)
                                         :AddEsp(CONFIG.keyColor)
-                                        :AddTitle(Color3.new(1, 1, 1), "🔑 KEY")
+                                        :AddTitle(Color3.new(1, 1, 1), "KEY")
                                         :AddDistance(Color3.new(1, 1, 1))
                                         :AddGlow(CONFIG.keyColor, 8)
                                 end
@@ -529,7 +529,7 @@ local function ItemESPLoop()
                                         local itemLabel = item.Name:gsub("Pile", ""):upper()
                                         espInstances.items[item] = ArcaneEsp.new(itemPart)
                                             :AddEsp(CONFIG.goldColor)
-                                            :AddTitle(Color3.new(1, 1, 1), "📦 " .. itemLabel)
+                                            :AddTitle(Color3.new(1, 1, 1), itemLabel)
                                             :AddDistance(Color3.new(1, 1, 1))
                                     end
                                 end
