@@ -1,4 +1,4 @@
--- Matcha Doors Script - Final Version? 
+-- Matcha Doors Script - Enhanced Version
 -- Libraries
 loadstring(game:HttpGet("https://arcanecheats.xyz/api/matcha/uilib"))()
 repeat wait() until Arcane
@@ -20,17 +20,20 @@ local CONFIG = {
     keyESP = true,
     entityESP = true,
     figureESP = true,
+    itemESP = false, -- Experimental
     espColor = Color3.fromRGB(127, 107, 188),
     doorColor = Color3.fromRGB(50, 255, 128),
     keyColor = Color3.fromRGB(255, 215, 0),
     entityColor = Color3.fromRGB(255, 0, 0),
-    figureColor = Color3.fromRGB(139, 0, 0)
+    figureColor = Color3.fromRGB(139, 0, 0),
+    goldColor = Color3.fromRGB(255, 215, 0)
 }
 
 local espInstances = {
     doors = {},
     keys = {},
-    entities = {}
+    entities = {},
+    items = {}
 }
 
 -- Create UI
@@ -49,6 +52,7 @@ local EntitySection = Window:CreateSection("Entity Detection", "Main")
 local DoorSection = Window:CreateSection("Door ESP", "Visuals")
 local KeySection = Window:CreateSection("Key ESP", "Visuals")
 local FigureSection = Window:CreateSection("Figure ESP", "Visuals")
+local ItemSection = Window:CreateSection("Item ESP (Experimental)", "Visuals")
 local ColorSection = Window:CreateSection("Colors", "Visuals")
 
 -- Entity Detection Toggles
@@ -114,6 +118,20 @@ FigureSection:AddToggle("Enable Figure ESP", CONFIG.figureESP, function(value)
     Arcane:Notify("ESP", "Figure ESP " .. (value and "enabled" or "disabled"), 3)
 end)
 
+-- Item ESP Section (Experimental)
+ItemSection:AddToggle("Enable Gold ESP", CONFIG.itemESP, function(value)
+    CONFIG.itemESP = value
+    if not value then
+        for _, esp in pairs(espInstances.items) do
+            if esp and esp.Destroy then
+                esp:Destroy()
+            end
+        end
+        espInstances.items = {}
+    end
+    Arcane:Notify("ESP", "Gold ESP " .. (value and "enabled" or "disabled") .. " [EXPERIMENTAL]", 3)
+end)
+
 -- Color Pickers
 ColorSection:AddColorPicker("Door Color", CONFIG.doorColor, function(color)
     CONFIG.doorColor = color
@@ -151,6 +169,16 @@ ColorSection:AddColorPicker("Figure Color", CONFIG.figureColor, function(color)
     end
 end)
 
+ColorSection:AddColorPicker("Gold Color", CONFIG.goldColor, function(color)
+    CONFIG.goldColor = color
+    for _, esp in pairs(espInstances.items) do
+        if esp and esp.Destroy then
+            esp:Destroy()
+        end
+    end
+    espInstances.items = {}
+end)
+
 -- Utility Functions
 local function getdistance(part)
     if not player.Character or not player.Character.HumanoidRootPart then
@@ -186,8 +214,8 @@ local function notifyEntity(entityName)
         -- Flash Warning
         local vSize = workspace.CurrentCamera.ViewportSize
         local warning = Drawing.new("Text")
-        warning.Text = "⚠️ " .. entityName .. " SPAWNED!"
-        warning.Size = 100
+        warning.Text = "⚠️ " .. entityName .. " SPAWNED! ⚠️"
+        warning.Size = 200
         warning.Color = Color3.fromRGB(255, 0, 0)
         warning.Outline = true
         warning.Position = Vector2.new(vSize.X / 2 - 250, vSize.Y / 2)
@@ -288,7 +316,7 @@ local function DoorESPLoop()
                     -- Create ESP if not exists
                     if not espInstances.doors[roomNum] then
                         local requiresKey = door.Parent:GetAttribute("RequiresKey") == true
-                        local doorLabel = "Door " .. roomNum .. (requiresKey and " Locked" or "")
+                        local doorLabel = "Door " .. roomNum .. (requiresKey and " 🔑" or "")
                         
                         espInstances.doors[roomNum] = ArcaneEsp.new(collision)
                             :AddEsp(CONFIG.doorColor)
@@ -309,7 +337,7 @@ local function DoorESPLoop()
     end
 end
 
--- Key ESP with Arcane ESP
+-- Key ESP with Arcane ESP (Updated with Table detection)
 local function KeyESPLoop()
     while true do
         task.wait(2)
@@ -324,9 +352,27 @@ local function KeyESPLoop()
         for i = roomInfo.current - 1, roomInfo.next + 2 do
             local room = rooms:FindFirstChild(tostring(i))
             if room then
-                -- Check in Assets folder for KeyObtain
                 local assets = room:FindFirstChild("Assets")
                 if assets then
+                    -- Check in Tables for KeyObtain
+                    for _, child in pairs(assets:GetChildren()) do
+                        if child.Name == "Table" then
+                            local keyObtain = child:FindFirstChild("KeyObtain")
+                            if keyObtain then
+                                local hitbox = keyObtain:FindFirstChild("Hitbox")
+                                
+                                if hitbox and not espInstances.keys[keyObtain] then
+                                    espInstances.keys[keyObtain] = ArcaneEsp.new(hitbox)
+                                        :AddEsp(CONFIG.keyColor)
+                                        :AddTitle(Color3.new(1, 1, 1), "🔑 KEY")
+                                        :AddDistance(Color3.new(1, 1, 1))
+                                        :AddGlow(CONFIG.keyColor, 8)
+                                end
+                            end
+                        end
+                    end
+                    
+                    -- Check directly in Assets for KeyObtain
                     local keyObtain = assets:FindFirstChild("KeyObtain")
                     if keyObtain then
                         local hitbox = keyObtain:FindFirstChild("Hitbox")
@@ -371,7 +417,7 @@ local function KeyESPLoop()
     end
 end
 
--- Figure ESP Loop
+-- Figure ESP Loop (Enhanced with info)
 local function FigureESPLoop()
     while true do
         task.wait(0.5)
@@ -397,6 +443,9 @@ local function FigureESPLoop()
                         if figurePart then
                             espInstances.entities["Figure50"] = ArcaneEsp.new(figurePart)
                                 :AddEsp(CONFIG.figureColor)
+                                :AddTitle(Color3.new(1, 1, 1), "FIGURE [Room 50]")
+                                :AddDistance(Color3.new(1, 0, 0))
+                                :AddGlow(CONFIG.figureColor, 12)
                         end
                     end
                 end
@@ -422,6 +471,9 @@ local function FigureESPLoop()
                         if figurePart then
                             espInstances.entities["Figure100"] = ArcaneEsp.new(figurePart)
                                 :AddEsp(CONFIG.figureColor)
+                                :AddTitle(Color3.new(1, 1, 1), "FIGURE [Room 100]")
+                                :AddDistance(Color3.new(1, 0, 0))
+                                :AddGlow(CONFIG.figureColor, 12)
                         end
                     end
                 end
@@ -435,6 +487,69 @@ local function FigureESPLoop()
     end
 end
 
+-- Item ESP Loop (Experimental - Gold and other items on tables)
+local function ItemESPLoop()
+    while true do
+        task.wait(2)
+        
+        if not CONFIG.itemESP or not rooms then
+            continue
+        end
+        
+        local roomInfo = getrooms()
+        
+        -- Check rooms for items on tables
+        for i = roomInfo.current - 1, roomInfo.next + 2 do
+            local room = rooms:FindFirstChild(tostring(i))
+            if room then
+                local assets = room:FindFirstChild("Assets")
+                if assets then
+                    -- Check all Tables in the room
+                    for _, child in pairs(assets:GetChildren()) do
+                        if child.Name == "Table" then
+                            -- Check for GoldPile
+                            local goldPile = child:FindFirstChild("GoldPile")
+                            if goldPile and not espInstances.items[goldPile] then
+                                local goldPart = goldPile:FindFirstChildWhichIsA("BasePart")
+                                if goldPart then
+                                    espInstances.items[goldPile] = ArcaneEsp.new(goldPart)
+                                        :AddEsp(CONFIG.goldColor)
+                                        :AddTitle(Color3.new(1, 1, 1), "GOLD")
+                                        :AddDistance(Color3.new(1, 1, 1))
+                                        :AddGlow(CONFIG.goldColor, 5)
+                                end
+                            end
+                            
+                            -- Check for other items (you can expand this)
+                            for _, item in pairs(child:GetChildren()) do
+                                if item:IsA("Model") and item.Name ~= "KeyObtain" and not espInstances.items[item] then
+                                    local itemPart = item:FindFirstChildWhichIsA("BasePart")
+                                    if itemPart then
+                                        -- Generic item ESP
+                                        local itemLabel = item.Name:gsub("Pile", ""):upper()
+                                        espInstances.items[item] = ArcaneEsp.new(itemPart)
+                                            :AddEsp(CONFIG.goldColor)
+                                            :AddTitle(Color3.new(1, 1, 1), "📦 " .. itemLabel)
+                                            :AddDistance(Color3.new(1, 1, 1))
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
+        -- Cleanup collected items
+        for item, esp in pairs(espInstances.items) do
+            if not item.Parent then
+                esp:Destroy()
+                espInstances.items[item] = nil
+            end
+        end
+    end
+end
+
 -- Finalize Window
 Window:Finalize()
 
@@ -443,9 +558,10 @@ spawn(EntityDetectionLoop)
 spawn(DoorESPLoop)
 spawn(KeyESPLoop)
 spawn(FigureESPLoop)
+spawn(ItemESPLoop)
 
 -- Initial notifications
 Arcane:Log("Doors ESP initialized successfully!", 3)
 Arcane:Notify("Welcome", "Doors ESP Loaded!", 5)
 
-print("[Matcha Doors] Script loaded - Final Version")
+print("[Matcha Doors] Script loaded - Enhanced Version")
