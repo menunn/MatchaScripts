@@ -1,4 +1,4 @@
--- Matcha Doors Script - Enhanced Version
+-- Matcha Doors Script - Fixed Version
 -- Libraries
 loadstring(game:HttpGet("https://arcanecheats.xyz/api/matcha/uilib"))()
 repeat wait() until Arcane
@@ -20,7 +20,7 @@ local CONFIG = {
     keyESP = true,
     entityESP = true,
     figureESP = true,
-    itemESP = false, -- Experimental
+    itemESP = false,
     espColor = Color3.fromRGB(127, 107, 188),
     doorColor = Color3.fromRGB(50, 255, 128),
     keyColor = Color3.fromRGB(255, 215, 0),
@@ -39,15 +39,12 @@ local espInstances = {
 -- Create UI
 local Window = Arcane:CreateWindow("Doors ESP", Vector2.new(650, 450), "Synthwave84")
 
--- Tab Sections
 Window:CreateTabSection("Main")
 Window:CreateTabSection("Visuals")
 
--- Tabs
 local MainTab = Window:CreateTab("Main")
 local VisualsTab = Window:CreateTab("Visuals")
 
--- Sections
 local EntitySection = Window:CreateSection("Entity Detection", "Main")
 local DoorSection = Window:CreateSection("Door ESP", "Visuals")
 local KeySection = Window:CreateSection("Key ESP", "Visuals")
@@ -55,7 +52,6 @@ local FigureSection = Window:CreateSection("Figure ESP", "Visuals")
 local ItemSection = Window:CreateSection("Item ESP (Experimental)", "Visuals")
 local ColorSection = Window:CreateSection("Colors", "Visuals")
 
--- Entity Detection Toggles
 EntitySection:AddToggle("Entity Notifications", CONFIG.entityNotify, function(value)
     CONFIG.entityNotify = value
     Arcane:Notify("Settings", "Entity notifications " .. (value and "enabled" or "disabled"), 3)
@@ -74,7 +70,6 @@ EntitySection:AddToggle("Entity ESP", CONFIG.entityESP, function(value)
     Arcane:Notify("ESP", "Entity ESP " .. (value and "enabled" or "disabled"), 3)
 end)
 
--- Door ESP Section
 DoorSection:AddToggle("Enable Door ESP", CONFIG.doorESP, function(value)
     CONFIG.doorESP = value
     if not value then
@@ -88,7 +83,6 @@ DoorSection:AddToggle("Enable Door ESP", CONFIG.doorESP, function(value)
     Arcane:Notify("ESP", "Door ESP " .. (value and "enabled" or "disabled"), 3)
 end)
 
--- Key ESP Section
 KeySection:AddToggle("Enable Key ESP", CONFIG.keyESP, function(value)
     CONFIG.keyESP = value
     if not value then
@@ -102,7 +96,6 @@ KeySection:AddToggle("Enable Key ESP", CONFIG.keyESP, function(value)
     Arcane:Notify("ESP", "Key ESP " .. (value and "enabled" or "disabled"), 3)
 end)
 
--- Figure ESP Section
 FigureSection:AddToggle("Enable Figure ESP", CONFIG.figureESP, function(value)
     CONFIG.figureESP = value
     if not value then
@@ -118,7 +111,6 @@ FigureSection:AddToggle("Enable Figure ESP", CONFIG.figureESP, function(value)
     Arcane:Notify("ESP", "Figure ESP " .. (value and "enabled" or "disabled"), 3)
 end)
 
--- Item ESP Section (Experimental)
 ItemSection:AddToggle("Enable Gold ESP", CONFIG.itemESP, function(value)
     CONFIG.itemESP = value
     if not value then
@@ -132,7 +124,6 @@ ItemSection:AddToggle("Enable Gold ESP", CONFIG.itemESP, function(value)
     Arcane:Notify("ESP", "Gold ESP " .. (value and "enabled" or "disabled") .. " [EXPERIMENTAL]", 3)
 end)
 
--- Color Pickers
 ColorSection:AddColorPicker("Door Color", CONFIG.doorColor, function(color)
     CONFIG.doorColor = color
     for _, esp in pairs(espInstances.doors) do
@@ -179,17 +170,7 @@ ColorSection:AddColorPicker("Gold Color", CONFIG.goldColor, function(color)
     espInstances.items = {}
 end)
 
--- Utility Functions
-local function getdistance(part)
-    if not player.Character or not player.Character.HumanoidRootPart then
-        return 0
-    end
-    local one = player.Character.HumanoidRootPart.Position
-    local two = part.Position
-    local Vmag = vector.magnitude(vector.create(one.X, one.Y, one.Z) - vector.create(two.X, two.Y, two.Z))
-    return math.round(Vmag)
-end
-
+-- Utility Functions (ORIGINAL SIN CAMBIOS)
 local function getrooms()
     if not rooms then return {current = 0, next = 0} end
     
@@ -207,12 +188,10 @@ local function getrooms()
     }
 end
 
-
 local function notifyEntity(entityName)
     if CONFIG.entityNotify then
         Arcane:Notify("ENTITY ALERT", entityName .. " SPAWNED!", 2)
         
-        -- Flash Warning
         local vSize = workspace.CurrentCamera.ViewportSize
         local warning = Drawing.new("Text")
         warning.Text = entityName .. " SPAWNED!"
@@ -229,13 +208,12 @@ local function notifyEntity(entityName)
     end
 end
 
--- Entity Detection with Arcane ESP
+-- Entity Detection
 local notifiedEntities = {}
 local function EntityDetectionLoop()
     while true do
         task.wait(0.5)
         
-        -- Clean up destroyed entities
         for entity in pairs(notifiedEntities) do
             if not entity.Parent then
                 notifiedEntities[entity] = nil
@@ -246,7 +224,6 @@ local function EntityDetectionLoop()
             end
         end
         
-        -- Check for Rush
         local rush = workspace:FindFirstChild("RushMoving")
         if rush and not notifiedEntities[rush] then
             notifyEntity("RUSH")
@@ -261,7 +238,6 @@ local function EntityDetectionLoop()
             end
         end
         
-        -- Check for Ambush
         local ambush = workspace:FindFirstChild("AmbushMoving")
         if ambush and not notifiedEntities[ambush] then
             notifyEntity("AMBUSH")
@@ -276,7 +252,6 @@ local function EntityDetectionLoop()
             end
         end
         
-        -- Check for Eyes
         local eyes = workspace:FindFirstChild("Eyes")
         if eyes and not notifiedEntities[eyes] then
             notifyEntity("EYES")
@@ -293,7 +268,7 @@ local function EntityDetectionLoop()
     end
 end
 
--- Door ESP with Arcane ESP
+-- Door ESP (ORIGINAL SIN CAMBIOS)
 local function DoorESPLoop()
     while true do
         task.wait(1)
@@ -306,7 +281,6 @@ local function DoorESPLoop()
         local currentRoom = roomInfo.current
         local nextRoom = roomInfo.next
         
-        -- ESP for current and next door
         for _, roomNum in ipairs({currentRoom, nextRoom}) do
             local room = rooms:FindFirstChild(tostring(roomNum))
             if room then
@@ -314,10 +288,9 @@ local function DoorESPLoop()
                 if door and door:FindFirstChild("Collision") then
                     local collision = door.Collision
                     
-                    -- Create ESP if not exists
                     if not espInstances.doors[roomNum] then
                         local requiresKey = door.Parent:GetAttribute("RequiresKey") == true
-                        local doorLabel = "Door " .. (roomNum + 1) .. (requiresKey and " [KEY]" or "")
+                        local doorLabel = "Door " .. roomNum .. (requiresKey and " [KEY]" or "")
                         
                         espInstances.doors[roomNum] = ArcaneEsp.new(collision)
                             :AddEsp(CONFIG.doorColor)
@@ -328,7 +301,6 @@ local function DoorESPLoop()
             end
         end
         
-        -- Clean up old door ESP
         for roomNum, esp in pairs(espInstances.doors) do
             if roomNum < currentRoom - 1 then
                 esp:Destroy()
@@ -338,7 +310,7 @@ local function DoorESPLoop()
     end
 end
 
--- Key ESP with Arcane ESP (Updated with Table detection)
+-- Key ESP
 local function KeyESPLoop()
     while true do
         task.wait(2)
@@ -349,13 +321,11 @@ local function KeyESPLoop()
         
         local roomInfo = getrooms()
         
-        -- Check rooms for keys (wider range)
         for i = roomInfo.current - 1, roomInfo.next + 2 do
             local room = rooms:FindFirstChild(tostring(i))
             if room then
                 local assets = room:FindFirstChild("Assets")
                 if assets then
-                    -- Check in Tables for KeyObtain
                     for _, child in pairs(assets:GetChildren()) do
                         if child.Name == "Table" then
                             local keyObtain = child:FindFirstChild("KeyObtain")
@@ -373,7 +343,6 @@ local function KeyESPLoop()
                         end
                     end
                     
-                    -- Check directly in Assets for KeyObtain
                     local keyObtain = assets:FindFirstChild("KeyObtain")
                     if keyObtain then
                         local hitbox = keyObtain:FindFirstChild("Hitbox")
@@ -387,7 +356,6 @@ local function KeyESPLoop()
                         end
                     end
                     
-                    -- Also check Parts folder (backup)
                     local parts = room:FindFirstChild("Parts")
                     if parts then
                         for _, v in pairs(parts:GetDescendants()) do
@@ -408,7 +376,6 @@ local function KeyESPLoop()
             end
         end
         
-        -- Cleanup collected keys
         for key, esp in pairs(espInstances.keys) do
             if not key.Parent then
                 esp:Destroy()
@@ -418,7 +385,7 @@ local function KeyESPLoop()
     end
 end
 
--- Figure ESP Loop (Enhanced with info)
+-- Figure ESP
 local function FigureESPLoop()
     while true do
         task.wait(0.5)
@@ -430,7 +397,6 @@ local function FigureESPLoop()
         local roomInfo = getrooms()
         local currentRoom = roomInfo.current
         
-        -- Check Room 50
         if currentRoom >= 49 and currentRoom <= 51 then
             local room50 = rooms:FindFirstChild("50")
             if room50 then
@@ -458,7 +424,6 @@ local function FigureESPLoop()
             end
         end
         
-        -- Check Room 100
         if currentRoom >= 99 and currentRoom <= 101 then
             local room100 = rooms:FindFirstChild("100")
             if room100 then
@@ -488,7 +453,7 @@ local function FigureESPLoop()
     end
 end
 
--- Item ESP Loop (Gold Only)
+-- Gold ESP
 local function ItemESPLoop()
     while true do
         task.wait(2)
@@ -499,16 +464,13 @@ local function ItemESPLoop()
         
         local roomInfo = getrooms()
         
-        -- Check rooms for GoldPile on tables
         for i = roomInfo.current - 1, roomInfo.next + 2 do
             local room = rooms:FindFirstChild(tostring(i))
             if room then
                 local assets = room:FindFirstChild("Assets")
                 if assets then
-                    -- Check all Tables in the room
                     for _, child in pairs(assets:GetChildren()) do
                         if child.Name == "Table" then
-                            -- Check for GoldPile ONLY
                             local goldPile = child:FindFirstChild("GoldPile")
                             if goldPile and not espInstances.items[goldPile] then
                                 local goldPart = goldPile:FindFirstChildWhichIsA("BasePart")
@@ -526,7 +488,6 @@ local function ItemESPLoop()
             end
         end
         
-        -- Cleanup collected items
         for item, esp in pairs(espInstances.items) do
             if not item.Parent then
                 esp:Destroy()
@@ -536,18 +497,15 @@ local function ItemESPLoop()
     end
 end
 
--- Finalize Window
 Window:Finalize()
 
--- Start all loops
 spawn(EntityDetectionLoop)
 spawn(DoorESPLoop)
 spawn(KeyESPLoop)
 spawn(FigureESPLoop)
 spawn(ItemESPLoop)
 
--- Initial notifications
 Arcane:Log("Doors ESP initialized successfully!", 3)
 Arcane:Notify("Welcome", "Doors ESP Loaded!", 5)
 
-print("[Matcha Doors] Script loaded")
+print("[Matcha Doors] Script loaded - Original Door Counting")
