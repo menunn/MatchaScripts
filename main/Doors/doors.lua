@@ -290,7 +290,8 @@ local function DoorESPLoop()
                     
                     if not espInstances.doors[roomNum] then
                         local requiresKey = door.Parent:GetAttribute("RequiresKey") == true
-                        local doorLabel = "Door " .. roomNum .. (requiresKey and " [KEY]" or "")
+                        local doorLabel = "Door " .. (roomNum + 1) .. (requiresKey and " [KEY]" or "")
+
                         
                         espInstances.doors[roomNum] = ArcaneEsp.new(collision)
                             :AddEsp(CONFIG.doorColor)
