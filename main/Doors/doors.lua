@@ -191,7 +191,7 @@ local function getdistance(part)
 end
 
 local function getrooms()
-    if not rooms then return {current = 1, next = 1} end
+    if not rooms then return {current = 0, next = 0} end
     
     local highest = 0
     for _, v in pairs(rooms:GetChildren()) do
@@ -201,18 +201,12 @@ local function getrooms()
         end
     end
     
-    if highest == 0 then
-        return {
-            current = 1,
-            next = 1
-        }
-    end
-    
     return {
-        current = highest,
+        current = highest - 1,
         next = highest
     }
 end
+
 
 local function notifyEntity(entityName)
     if CONFIG.entityNotify then
@@ -323,7 +317,7 @@ local function DoorESPLoop()
                     -- Create ESP if not exists
                     if not espInstances.doors[roomNum] then
                         local requiresKey = door.Parent:GetAttribute("RequiresKey") == true
-                        local doorLabel = "Door " .. roomNum .. (requiresKey and " [KEY]" or "")
+                        local doorLabel = "Door " .. (roomNum + 1) .. (requiresKey and " [KEY]" or "")
                         
                         espInstances.doors[roomNum] = ArcaneEsp.new(collision)
                             :AddEsp(CONFIG.doorColor)
