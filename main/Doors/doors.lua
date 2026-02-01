@@ -316,7 +316,7 @@ local function DoorESPLoop()
                     -- Create ESP if not exists
                     if not espInstances.doors[roomNum] then
                         local requiresKey = door.Parent:GetAttribute("RequiresKey") == true
-                        local doorLabel = "Door " .. roomNum .. (requiresKey and " KEY" or "")
+                        local doorLabel = "Door " .. roomNum .. (requiresKey and " [KEY]" or "")
                         
                         espInstances.doors[roomNum] = ArcaneEsp.new(collision)
                             :AddEsp(CONFIG.doorColor)
@@ -487,7 +487,7 @@ local function FigureESPLoop()
     end
 end
 
--- Item ESP Loop (Experimental - Gold and other items on tables)
+-- Item ESP Loop (Gold Only)
 local function ItemESPLoop()
     while true do
         task.wait(2)
@@ -498,7 +498,7 @@ local function ItemESPLoop()
         
         local roomInfo = getrooms()
         
-        -- Check rooms for items on tables
+        -- Check rooms for GoldPile on tables
         for i = roomInfo.current - 1, roomInfo.next + 2 do
             local room = rooms:FindFirstChild(tostring(i))
             if room then
@@ -507,7 +507,7 @@ local function ItemESPLoop()
                     -- Check all Tables in the room
                     for _, child in pairs(assets:GetChildren()) do
                         if child.Name == "Table" then
-                            -- Check for GoldPile
+                            -- Check for GoldPile ONLY
                             local goldPile = child:FindFirstChild("GoldPile")
                             if goldPile and not espInstances.items[goldPile] then
                                 local goldPart = goldPile:FindFirstChildWhichIsA("BasePart")
@@ -517,21 +517,6 @@ local function ItemESPLoop()
                                         :AddTitle(Color3.new(1, 1, 1), "GOLD")
                                         :AddDistance(Color3.new(1, 1, 1))
                                         :AddGlow(CONFIG.goldColor, 5)
-                                end
-                            end
-                            
-                            -- Check for other items (you can expand this)
-                            for _, item in pairs(child:GetChildren()) do
-                                if item:IsA("Model") and item.Name ~= "KeyObtain" and not espInstances.items[item] then
-                                    local itemPart = item:FindFirstChildWhichIsA("BasePart")
-                                    if itemPart then
-                                        -- Generic item ESP
-                                        local itemLabel = item.Name:gsub("Pile", ""):upper()
-                                        espInstances.items[item] = ArcaneEsp.new(itemPart)
-                                            :AddEsp(CONFIG.goldColor)
-                                            :AddTitle(Color3.new(1, 1, 1), itemLabel)
-                                            :AddDistance(Color3.new(1, 1, 1))
-                                    end
                                 end
                             end
                         end
@@ -564,4 +549,4 @@ spawn(ItemESPLoop)
 Arcane:Log("Doors ESP initialized successfully!", 3)
 Arcane:Notify("Welcome", "Doors ESP Loaded!", 5)
 
-print("[Matcha Doors] Script loaded - Enhanced Version")
+print("[Matcha Doors] Script loaded")
