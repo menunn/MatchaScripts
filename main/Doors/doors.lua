@@ -170,7 +170,7 @@ ColorSection:AddColorPicker("Gold Color", CONFIG.goldColor, function(color)
     espInstances.items = {}
 end)
 
--- Utility Functions (ORIGINAL SIN CAMBIOS)
+-- Utility Functions 
 local function getrooms()
     if not rooms then return {current = 0, next = 0} end
     
@@ -268,7 +268,7 @@ local function EntityDetectionLoop()
     end
 end
 
--- Door ESP (ORIGINAL SIN CAMBIOS)
+-- Door ESP 
 local function DoorESPLoop()
     while true do
         task.wait(1)
@@ -509,4 +509,4 @@ spawn(ItemESPLoop)
 Arcane:Log("Doors ESP initialized successfully!", 3)
 Arcane:Notify("Welcome", "Doors ESP Loaded!", 5)
 
-print("[Matcha Doors] Script loaded - Original Door Counting")
+print("[Matcha Doors] Script loaded")
