@@ -191,7 +191,7 @@ local function getdistance(part)
 end
 
 local function getrooms()
-    if not rooms then return {current = 0, next = 0} end
+    if not rooms then return {current = 1, next = 1} end
     
     local highest = 0
     for _, v in pairs(rooms:GetChildren()) do
@@ -201,9 +201,16 @@ local function getrooms()
         end
     end
     
+    if highest == 0 then
+        return {
+            current = 1,
+            next = 1
+        }
+    end
+    
     return {
-        current = highest,      
-        next = highest - 1 
+        current = highest,
+        next = highest
     }
 end
 
@@ -306,7 +313,7 @@ local function DoorESPLoop()
         local nextRoom = roomInfo.next
         
         -- ESP for current and next door
-        for _, roomNum in ipairs({nextRoom, nextRoom + 1}) do
+        for _, roomNum in ipairs({currentRoom, nextRoom}) do
             local room = rooms:FindFirstChild(tostring(roomNum))
             if room then
                 local door = room:FindFirstChild("Door")
