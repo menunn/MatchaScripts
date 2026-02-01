@@ -202,8 +202,8 @@ local function getrooms()
     end
     
     return {
-        current = highest - 1,
-        next = highest
+        current = highest,      
+        next = highest + 1      
     }
 end
 
